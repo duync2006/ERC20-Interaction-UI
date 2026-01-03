@@ -110,7 +110,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <h1>STABLE COIN FOR ISSUER</h1>
+      <h1>STABLECOIN DASHBOARD</h1>
 
       <div className="form-container">
         {/* <div className="form-group">
