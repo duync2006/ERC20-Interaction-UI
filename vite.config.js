@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5555,
+    allowedHosts: ['x23.i247.com'],
     proxy: {
       '/rpc': {
         target: 'https://x24.i247.com',
