@@ -16,6 +16,9 @@ function App() {
   const [txHash, setTxHash] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [contractInfo, setContractInfo] = useState(null)
+  const [checkingContract, setCheckingContract] = useState(false)
+  const [contractError, setContractError] = useState('')
 
   const openPrivateKeyModal = (action) => {
     setCurrentAction(action)
@@ -29,6 +32,59 @@ function App() {
     setPrivateKey('')
     setModalRecipientAddress('')
     setCurrentAction(null)
+  }
+
+  const checkContractInfo = async () => {
+    if (!contractAddress) {
+      setContractError('Please enter a contract address')
+      return
+    }
+
+    setCheckingContract(true)
+    setContractError('')
+    setContractInfo(null)
+
+    try {
+      const web3 = new Web3("http://x21.i247.com:8545")
+      const contract = new web3.eth.Contract(ERC20_ABI, contractAddress)
+
+      // Fetch contract information
+      const [name, symbol, decimals, totalSupply, owner] = await Promise.all([
+        contract.methods.name().call().catch(() => 'N/A'),
+        contract.methods.symbol().call().catch(() => 'N/A'),
+        contract.methods.decimals().call().catch(() => '18'),
+        contract.methods.totalSupply().call().catch(() => '0'),
+        contract.methods.owner().call().catch(() => 'N/A')
+      ])
+
+      // Fetch owner balance
+      let ownerBalance = '0'
+      if (owner !== 'N/A') {
+        try {
+          ownerBalance = await contract.methods.balanceOf(owner).call()
+        } catch (err) {
+          console.error('Error fetching owner balance:', err)
+        }
+      }
+
+      // Convert total supply and balance from wei to tokens
+      const totalSupplyInTokens = web3.utils.fromWei(totalSupply.toString(), 'ether')
+      const ownerBalanceInTokens = web3.utils.fromWei(ownerBalance.toString(), 'ether')
+
+      setContractInfo({
+        name,
+        symbol,
+        decimals: decimals.toString(),
+        totalSupply: totalSupplyInTokens,
+        owner,
+        ownerBalance: ownerBalanceInTokens
+      })
+    } catch (err) {
+      console.error('Error fetching contract info:', err)
+      setContractError('Failed to fetch contract information. Please check the address and try again.')
+    } finally {
+      setCheckingContract(false)
+    }
   }
 
   const executeTransaction = async () => {
@@ -124,15 +180,62 @@ function App() {
           />
         </div> */}
 
+        {contractError && (
+          <div className="error-message">
+            <p>{contractError}</p>
+          </div>
+        )}
+
+        {contractInfo && (
+          <div className="contract-info-card">
+            {/* <h3>Contract Information</h3> */}
+            <div className="info-grid">
+              <div className="info-item">
+                <span className="info-label">Name:</span>
+                <span className="info-value">{contractInfo.name}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Symbol:</span>
+                <span className="info-value">{contractInfo.symbol}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Decimals:</span>
+                <span className="info-value">{contractInfo.decimals}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Total Supply:</span>
+                <span className="info-value">{contractInfo.totalSupply} {contractInfo.symbol}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Owner Address:</span>
+                <span className="info-value contract-address">{contractInfo.owner}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Owner Balance:</span>
+                <span className="info-value contract-address">{contractInfo.ownerBalance} {contractInfo.symbol}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="form-group">
           <label>ERC20 Contract Address:</label>
-          <input
-            type="text"
-            value={contractAddress}
-            onChange={(e) => setContractAddress(e.target.value)}
-            placeholder="0x..."
-            className="input-field"
-          />
+          <div className="input-with-button">
+            <input
+              type="text"
+              value={contractAddress}
+              onChange={(e) => setContractAddress(e.target.value)}
+              placeholder="0x..."
+              className="input-field"
+            />
+            <button
+              onClick={checkContractInfo}
+              className="check-button"
+              disabled={!contractAddress || checkingContract}
+            >
+              {checkingContract ? 'Checking...' : 'Check'}
+            </button>
+          </div>
         </div>
 
         <div className="form-group">

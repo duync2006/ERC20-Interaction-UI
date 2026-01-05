@@ -224,3 +224,88 @@ h1 {
 .error-message p {
   margin: 0;
 }
+
+.input-with-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.input-with-button .input-field {
+  flex: 1;
+}
+
+.check-button {
+  padding: 0.75rem 1.5rem;
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.check-button:hover:not(:disabled) {
+  background: #535ac8;
+  transform: translateY(-2px);
+}
+
+.check-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.contract-info-card {
+  background: #2a2a2a;
+  border: 2px solid #646cff;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0rem 1.5rem 1rem 1.5rem;
+  text-align: left;
+}
+
+.contract-info-card h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #646cff;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.info-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.75rem;
+  background: #1a1a1a;
+  border-radius: 6px;
+  border-left: 3px solid #646cff;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #aaa;
+  margin-right: 0rem;
+  min-width: 100px;
+}
+
+.info-value {
+  color: #fff;
+  font-weight: 500;
+  word-break: break-all;
+  text-align: right;
+  flex: 1;
+}
+
+.contract-address {
+  font-family: monospace;
+  font-size: 0.9rem;
+}
