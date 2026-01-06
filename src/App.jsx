@@ -5,7 +5,7 @@ import {ERC20_ABI} from '../erc20_abi'
 
 
 function App() {
-  const [contractAddress, setContractAddress] = useState('')
+  const [contractAddress, setContractAddress] = useState('0x329aaF4e8d9883c6F8610D48172DE9c6C0917ecD')
   const [rpcUrl, setRpcUrl] = useState('')
   const [amount, setAmount] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('')
@@ -122,10 +122,12 @@ function App() {
           if (!recipientAddress) {
             setRecipientAddress(account.address)
           }
-          txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
-            from: account.address,
-            gas: 300000
-          })
+          // txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
+          //   from: account.address,
+          //   gas: 300000
+          // })
+          txData = await contract.methods.mint(recipientAddress, amountInWei).encodeABI()
+          console.log("txData: ", txData)
           break
 
         case 'burn':
