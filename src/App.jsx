@@ -122,12 +122,12 @@ function App() {
           if (!recipientAddress) {
             setRecipientAddress(account.address)
           }
-          // txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
-          //   from: account.address,
-          //   gas: 300000
-          // })
-          txData = await contract.methods.mint(recipientAddress, amountInWei).encodeABI()
-          console.log("txData: ", txData)
+          txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
+            from: account.address,
+            gas: 300000
+          })
+          // txData = await contract.methods.mint(recipientAddress, amountInWei).encodeABI()
+          // console.log("txData: ", txData)
           break
 
         case 'burn':
