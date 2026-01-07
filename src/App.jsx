@@ -151,60 +151,60 @@ function App() {
             setRecipientAddress(account.address)
           }
 
-          // txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
-          //   from: account.address,
-          //   gas: 300000
-          // })
+          txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
+            from: account.address,
+            gas: 300000
+          })
           // console.log("txData: ", contract.methods.mint(recipientAddress, amountInWei).encodeABI())
 
           // Call POST http://x23.i247.com:9090/api/mint with JSON body
           // const mintData = contract.methods.mint(recipientAddress, amountInWei).encodeABI()
 
           // Encrypt the private key before sending
-          const formattedPrivateKey = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey
-          const encryptedPrivateKey = encryptPrivateKey(formattedPrivateKey)
+          // const formattedPrivateKey = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey
+          // const encryptedPrivateKey = encryptPrivateKey(formattedPrivateKey)
 
-          response = await fetch('https://m1.i247.com/kokka/token/mint', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              encrypted_private_key: encryptedPrivateKey,
-              contract_address: contractAddress,
-              to: await contract.methods.owner().call() ,
-              amount: amount
-            })
-          })
+          // response = await fetch('https://m1.i247.com/kokka/token/mint', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify({
+          //     encrypted_private_key: encryptedPrivateKey,
+          //     contract_address: contractAddress,
+          //     to: await contract.methods.owner().call() ,
+          //     amount: amount
+          //   })
+          // })
 
-          if (!response.ok) {
-            throw new Error(`API call failed: ${response.statusText}`)
-          }
+          // if (!response.ok) {
+          //   throw new Error(`API call failed: ${response.statusText}`)
+          // }
 
-          result = await response.json()
-          txReceipt = { transactionHash: result.tx_hash }
+          // result = await response.json()
+          // txReceipt = { transactionHash: result.tx_hash }
           break
 
         case 'burn':
-          // txReceipt = await contract.methods.burn(amountInWei).send({
-          //   from: account.address,
-          //   gas: 300000
-          // })
-
-          response = await fetch('https://m1.i247.com/kokka/token/burn', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              encrypted_private_key: encryptedPrivateKey,
-              contract_address: contractAddress,
-              amount: amount
-            })
+          txReceipt = await contract.methods.burn(amountInWei).send({
+            from: account.address,
+            gas: 300000
           })
 
-          result = await response.json()
-          txReceipt = { transactionHash: result.tx_hash }
+          // response = await fetch('https://m1.i247.com/kokka/token/burn', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify({
+          //     encrypted_private_key: encryptedPrivateKey,
+          //     contract_address: contractAddress,
+          //     amount: amount
+          //   })
+          // })
+
+          // result = await response.json()
+          // txReceipt = { transactionHash: result.tx_hash }
           // console.log("Burn txData: ", contract.methods.burn(amountInWei).encodeABI())
           break
 
@@ -214,28 +214,28 @@ function App() {
             setLoading(false)
             return
           }
-          // txReceipt = await contract.methods.transfer(modalRecipientAddress, amountInWei).send({
-          //   from: account.address,
-          //   gas: 300000
-          // })
+          txReceipt = await contract.methods.transfer(modalRecipientAddress, amountInWei).send({
+            from: account.address,
+            gas: 300000
+          })
 
           // console.log("transfer txData: ", contract.methods.transfer(modalRecipientAddress, amountInWei).encodeABI())
 
-          response = await fetch('https://m1.i247.com/kokka/token/transfer', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              encrypted_private_key: encryptedPrivateKey,
-              contract_address: contractAddress,
-              amount: amount,
-              to: modalRecipientAddress
-            })
-          })
+          // response = await fetch('https://m1.i247.com/kokka/token/transfer', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify({
+          //     encrypted_private_key: encryptedPrivateKey,
+          //     contract_address: contractAddress,
+          //     amount: amount,
+          //     to: modalRecipientAddress
+          //   })
+          // })
 
-          result = await response.json()
-          txReceipt = { transactionHash: result.tx_hash }
+          // result = await response.json()
+          // txReceipt = { transactionHash: result.tx_hash }
           break
 
         default:
