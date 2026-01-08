@@ -330,7 +330,6 @@ function App() {
       } else if (fromToken === tokenVNDX && toToken === tokenYENX || fromToken === tokenYENX && toToken === tokenVNDX ) {
         swapContractAddress = SWAP_YENX_VNDX_ADDRESS
       }
-      console.log("swapContractAddress: ", swapContractAddress)
       const swapContract = new web3.eth.Contract(SWAP_ABI, swapContractAddress)
       const amountInWei = web3.utils.toWei(inputAmount, 'ether')
 
@@ -384,8 +383,6 @@ function App() {
       let response
       let result
       const amountInWei = web3.utils.toWei(amount || '0', 'ether')
-      console.log("signer: ", account.address)
-      console.log("contract address: ", contractAddress)
       setRecipientAddress(account.address)
       // Execute the appropriate action
       switch (currentAction) {
@@ -398,7 +395,6 @@ function App() {
             from: account.address,
             gas: 300000
           })
-          // console.log("txData: ", contract.methods.mint(recipientAddress, amountInWei).encodeABI())
 
           // Call POST http://x23.i247.com:9090/api/mint with JSON body
           // const mintData = contract.methods.mint(recipientAddress, amountInWei).encodeABI()
@@ -448,7 +444,6 @@ function App() {
 
           // result = await response.json()
           // txReceipt = { transactionHash: result.tx_hash }
-          // console.log("Burn txData: ", contract.methods.burn(amountInWei).encodeABI())
           break
 
         case 'transfer':
@@ -461,8 +456,6 @@ function App() {
             from: account.address,
             gas: 300000
           })
-
-          // console.log("transfer txData: ", contract.methods.transfer(modalRecipientAddress, amountInWei).encodeABI())
 
           response = await fetch('https://m1.i247.com/kokka/token/transfer', {
             method: 'POST',
