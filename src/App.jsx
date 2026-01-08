@@ -457,21 +457,21 @@ function App() {
             gas: 300000
           })
 
-          response = await fetch('https://m1.i247.com/kokka/token/transfer', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              encrypted_private_key: encryptedPrivateKey,
-              contract_address: contractAddress,
-              amount: amount,
-              to: modalRecipientAddress
-            })
-          })
+          // response = await fetch('https://m1.i247.com/kokka/token/transfer', {
+          //   method: 'POST',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify({
+          //     encrypted_private_key: encryptedPrivateKey,
+          //     contract_address: contractAddress,
+          //     amount: amount,
+          //     to: modalRecipientAddress
+          //   })
+          // })
 
-          result = await response.json()
-          txReceipt = { transactionHash: result.tx_hash }
+          // result = await response.json()
+          // txReceipt = { transactionHash: result.tx_hash }
           break
 
         default:
