@@ -7,7 +7,7 @@ export default defineConfig({
   // base: '/dashboard/',
   server: {
     port: 5555,
-    // allowedHosts: ['0.0.0.0','m1.i247.com'],
+    allowedHosts: ['0.0.0.0','.i247.com'],
     host: '0.0.0.0',
     proxy: {
       '/rpc': {
