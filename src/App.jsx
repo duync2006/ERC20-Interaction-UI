@@ -877,8 +877,8 @@ function App() {
 
             {/* Account Address */}
             {swapBalances && (
-              <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#f0f8ff', borderRadius: '5px' }}>
-                <p style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+              <div style={{ marginBottom: '15px', padding: '1px', backgroundColor: '#f0f8ff', borderRadius: '5px' }}>
+                <p style={{ fontSize: '18px', color: '#666', marginBottom: '10px' }}>
                   <strong>Account:</strong> {swapBalances.accountAddress.substring(0, 10)}...{swapBalances.accountAddress.substring(swapBalances.accountAddress.length - 8)}
                 </p>
               </div>
@@ -997,7 +997,19 @@ function App() {
                 className="confirm-button"
                 disabled={swapLoading || (!isMetaMaskConnected && !swapPrivateKey)}
               >
-                {swapLoading ? 'Processing...' : 'Confirm Swap'}
+                {swapLoading ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span style={{
+                      width: '16px',
+                      height: '16px',
+                      border: '2px solid #ffffff',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite'
+                    }}></span>
+                    Processing...
+                  </span>
+                ) : 'Confirm Swap'}
               </button>
 
               <button
