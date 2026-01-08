@@ -1051,8 +1051,24 @@ function App() {
                 onClick={executeTransaction}
                 className="confirm-button"
                 disabled={loading || !privateKey || (currentAction === 'transfer' && !modalRecipientAddress)}
+                style={{
+                  position: 'relative',
+                  transition: 'all 0.3s ease'
+                }}
               >
-                {loading ? 'Processing...' : 'Sign & Send Transaction'}
+                {loading ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span style={{
+                      width: '16px',
+                      height: '16px',
+                      border: '2px solid #ffffff',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite'
+                    }}></span>
+                    Processing...
+                  </span>
+                ) : 'Sign & Send Transaction'}
               </button>
 
               <button
