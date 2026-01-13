@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import Web3 from 'web3'
 import {ERC20_ABI} from '../erc20_abi'
@@ -71,6 +71,42 @@ function App() {
   // MetaMask states
   const [isMetaMaskConnected, setIsMetaMaskConnected] = useState(false)
   const [metaMaskAccount, setMetaMaskAccount] = useState('')
+
+  // Clear cache on component mount (page reload)
+  useEffect(() => {
+    // Log before clearing to see what was cached
+    console.log('=== BEFORE CACHE CLEAR ===')
+    console.log('localStorage items:', localStorage.length)
+    console.log('sessionStorage items:', sessionStorage.length)
+    console.log('Transaction Hash:', txHash)
+    console.log('Swap TX Hash:', swapTxHash)
+    console.log('MetaMask Connected:', isMetaMaskConnected)
+    console.log('MetaMask Account:', metaMaskAccount)
+
+    // Clear all state-related data on reload
+    setTxHash('')
+    setSwapTxHash('')
+    setSwapBalances(null)
+    setError('')
+    setSwapError('')
+    setContractError('')
+    setEstimatedOutput('')
+
+    // Disconnect MetaMask on reload
+    setIsMetaMaskConnected(false)
+    setMetaMaskAccount('')
+
+    // Clear localStorage if you're using it
+    localStorage.clear()
+
+    // Clear sessionStorage if you're using it
+    sessionStorage.clear()
+
+    console.log('=== AFTER CACHE CLEAR ===')
+    console.log('localStorage items:', localStorage.length)
+    console.log('sessionStorage items:', sessionStorage.length)
+    console.log('✅ Cache cleared on page reload')
+  }, [])
 
   const openPrivateKeyModal = (action) => {
     setCurrentAction(action)
@@ -163,6 +199,54 @@ function App() {
         return
       }
 
+      const targetChainId = '0x22B8' // 8888 in hexadecimal
+
+      // Check current network
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' })
+      console.log('Current Chain ID:', currentChainId)
+      // If not on the correct network, try to switch or add it
+      if (currentChainId !== targetChainId) {
+        try {
+          // Try to switch to the network
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: targetChainId }],
+          })
+        } catch (switchError) {
+          console.log('Switch network error_duy.:', switchError.code)
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code == 4902) {
+            try {
+              // Add the network to MetaMask
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [
+                  {
+                    chainId: targetChainId,
+                    chainName: 'Kokka Testnet',
+                    nativeCurrency: {
+                      name: 'Kokka',
+                      symbol: 'kokka',
+                      decimals: 18
+                    },
+                    rpcUrls: ['https://x24.i247.com'],
+                    blockExplorerUrls: ['http://x23.i247.com:8888']
+                  },
+                ],
+              })
+            } catch (addError) {
+              console.error('Error adding network:', addError)
+              setSwapError('Failed to add network: ' + addError.message)
+              return
+            }
+          } else {
+            console.error('Error switching network:', switchError)
+            setSwapError('Failed to switch network: ' + switchError.message)
+            return
+          }
+        }
+      }
+
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
 
       if (accounts.length > 0) {
@@ -206,7 +290,7 @@ function App() {
         account = { address: metaMaskAccount }
       } else {
         // Use private key
-        web3 = new Web3("http://x21.i247.com:8545")
+        web3 = new Web3("https://x24.i247.com")
         account = web3.eth.accounts.privateKeyToAccount(
           swapPrivateKey.startsWith('0x') ? swapPrivateKey : '0x' + swapPrivateKey
         )
