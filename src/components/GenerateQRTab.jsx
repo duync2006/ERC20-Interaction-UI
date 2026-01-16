@@ -3,9 +3,9 @@ import QRCode from 'react-qr-code'
 import { CHAIN_ID, TOKEN_VNDX, TOKEN_YENX } from './constants'
 
 const GenerateQRTab = () => {
-  const [selectedToken, setSelectedToken] = useState('kokka')
+  const [selectedToken, setSelectedToken] = useState('vndx')
   const [amount, setAmount] = useState('')
-  const [recipientAddress, setRecipientAddress] = useState('')
+  const [recipientAddress, setRecipientAddress] = useState('0x7cB61D4117AE31a12E393a1Cfa3BaC666481D02E')
   const [qrGenerated, setQrGenerated] = useState(false)
 
   const tokens = {
@@ -22,8 +22,10 @@ const GenerateQRTab = () => {
     const amountInWei = BigInt(Math.floor(parseFloat(amount) * Math.pow(10, token.decimals))).toString()
 
     if (selectedToken === 'kokka') {
+      console.log('Generating QR for native token:', `ethereum:${recipientAddress}@${CHAIN_ID}?value=${amountInWei}`)
       return `ethereum:${recipientAddress}@${CHAIN_ID}?value=${amountInWei}`
     } else {
+      console.log('Generating QR for token:', `ethereum:${token.address}@${CHAIN_ID}/transfer?address=${recipientAddress}&uint256=${amountInWei}`)
       return `ethereum:${token.address}@${CHAIN_ID}/transfer?address=${recipientAddress}&uint256=${amountInWei}`
     }
   }
@@ -107,7 +109,7 @@ const GenerateQRTab = () => {
           type="text"
           value={recipientAddress}
           onChange={(e) => { setRecipientAddress(e.target.value); setQrGenerated(false); }}
-          placeholder="0x..."
+          placeholder="0x7cB61D4117AE31a12E393a1Cfa3BaC666481D02E"
           style={{
             width: '100%',
             padding: '12px',
@@ -167,6 +169,7 @@ const GenerateQRTab = () => {
             border: '2px solid #f321ec'
           }}>
             <QRCode value={qrData} size={250} />
+            {console.log('QR Data:', qrData)}  
           </div>
           <p style={{ marginTop: '16px', color: '#666', fontSize: '14px' }}>
             Scan with MetaMask Mobile
