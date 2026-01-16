@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
-import { CHAIN_ID, TOKEN_VNDX, TOKEN_YENX } from './constants'
+import { CHAIN_ID, TOKEN_VNDX, TOKEN_VNDX2, TOKEN_YENX } from './constants'
+import Web3 from 'web3'
 
 const GenerateQRTab = () => {
-  const [selectedToken, setSelectedToken] = useState('vndx')
+  const [selectedToken, setSelectedToken] = useState('vndx2')
   const [amount, setAmount] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('0x7cB61D4117AE31a12E393a1Cfa3BaC666481D02E')
   const [qrGenerated, setQrGenerated] = useState(false)
@@ -12,21 +13,28 @@ const GenerateQRTab = () => {
     kokka: { name: 'Kokka', address: null, decimals: 18 },
     vndx: { name: 'VNDX', address: TOKEN_VNDX, decimals: 18 },
     sgpx: { name: 'SGPX', address: TOKEN_VNDX, decimals: 18 },
-    yenx: { name: 'YENX', address: TOKEN_YENX, decimals: 18 }
+    yenx: { name: 'YENX', address: TOKEN_YENX, decimals: 18 },
+    vndx2: { name: 'vndx2', address: TOKEN_VNDX2, decimals: 6 }
   }
 
   const generateQRData = () => {
     if (!amount || !recipientAddress) return ''
 
     const token = tokens[selectedToken]
-    const amountInWei = BigInt(Math.floor(parseFloat(amount) * Math.pow(10, token.decimals))).toString()
+    const amountInWei = Web3.utils.toWei(amount.toString(), 'ether')
 
     if (selectedToken === 'kokka') {
-      console.log('Generating QR for native token:', `ethereum:${recipientAddress}@${CHAIN_ID}?value=${amountInWei}`)
-      return `ethereum:${recipientAddress}@${CHAIN_ID}?value=${amountInWei}`
+      // Native token uses wei for value
+      const url = `ethereum:${recipientAddress}@${CHAIN_ID}?value=${amountInWei}`
+      console.log('Generating QR for native token:', url)
+      return url
     } else {
-      console.log('Generating QR for token:', `ethereum:${token.address}@${CHAIN_ID}/transfer?address=${recipientAddress}&uint256=${amountInWei}`)
-      return `ethereum:${token.address}@${CHAIN_ID}/transfer?address=${recipientAddress}&uint256=${amountInWei}`
+      // ERC-20: MetaMask bug - use token amount directly, not wei
+      // MetaMask incorrectly parses uint256 as token units instead of atomic units
+      const amountInTokenDecimals = amount * (10 ** token.decimals)
+      const url = `ethereum:${token.address}@${CHAIN_ID}/transfer?address=${recipientAddress}&uint256=${amountInTokenDecimals}`
+      console.log('Generating QR for token:', url)
+      return url
     }
   }
 
@@ -78,6 +86,7 @@ const GenerateQRTab = () => {
           <option value="vndx">VNDX</option>
           <option value="sgpx">SGPX</option>
           <option value="yenx">YENX</option>
+          <option value="vndx2">VNDX2</option>
         </select>
       </div>
 
