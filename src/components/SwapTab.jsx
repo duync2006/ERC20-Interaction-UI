@@ -8,6 +8,7 @@ import {
   TOKEN_YENX,
   SWAP_SGPX_VNDX_ADDRESS,
   SWAP_YENX_VNDX_ADDRESS,
+  SWAP_SGPX_YENX_ADDRESS,
   RPC_URL,
   RPC_URL_HTTPS,
   CHAIN_ID_HEX,
@@ -117,6 +118,10 @@ const SwapTab = () => {
     } else if ((fromToken === TOKEN_VNDX && toToken === TOKEN_YENX) ||
                (fromToken === TOKEN_YENX && toToken === TOKEN_VNDX)) {
       return SWAP_YENX_VNDX_ADDRESS
+    } else if ((fromToken === TOKEN_SGPX && toToken === TOKEN_YENX) ||
+               (fromToken === TOKEN_YENX && toToken === TOKEN_SGPX)) {
+      console.log('Using SGPX-YENX swap contract', SWAP_SGPX_YENX_ADDRESS)
+      return SWAP_SGPX_YENX_ADDRESS
     }
     return null
   }
@@ -177,7 +182,7 @@ const SwapTab = () => {
             gas: 300000
           })
         }
-      } else if (fromToken === TOKEN_SGPX && toToken === TOKEN_VNDX) {
+      } else if (fromToken === TOKEN_SGPX && (toToken === TOKEN_VNDX || toToken === TOKEN_YENX)) {
         const tokenSGPXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_SGPX)
         const approveTx = await tokenSGPXContract.methods.approve(swapContractAddress, amountInWei).send({
           from: account.address,
@@ -189,7 +194,7 @@ const SwapTab = () => {
             gas: 300000
           })
         }
-      } else if (fromToken === TOKEN_YENX && toToken === TOKEN_VNDX) {
+      } else if (fromToken === TOKEN_YENX && (toToken === TOKEN_VNDX || toToken === TOKEN_SGPX)) {
         const tokenYENXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_YENX)
         const approveTx = await tokenYENXContract.methods.approve(swapContractAddress, amountInWei).send({
           from: account.address,
@@ -254,8 +259,13 @@ const SwapTab = () => {
       } else if ((fromTokenAddress === TOKEN_VNDX && toTokenAddress === TOKEN_YENX) ||
                  (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_VNDX)) {
         swapContractAddress = SWAP_YENX_VNDX_ADDRESS
+      } else if ((fromTokenAddress === TOKEN_SGPX && toTokenAddress === TOKEN_YENX) ||
+                  (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_SGPX)) {
+        swapContractAddress = SWAP_SGPX_YENX_ADDRESS
+      } else {
+        setEstimatedOutput('N/A')
+        return
       }
-
       const swapContract = new web3.eth.Contract(SWAP_ABI, swapContractAddress)
       const amountInWei = web3.utils.toWei(inputAmount, 'ether')
 
@@ -267,6 +277,11 @@ const SwapTab = () => {
       } else if (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_VNDX) {
         outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
       } else if (fromTokenAddress === TOKEN_VNDX && toTokenAddress === TOKEN_YENX) {
+        outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
+      } else if (fromTokenAddress === TOKEN_SGPX && toTokenAddress === TOKEN_YENX) {
+        outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
+        console.log('Estimating SGPX to YENX:', outputWei)
+      } else if (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_SGPX) {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
       } else {
         setEstimatedOutput('N/A')
