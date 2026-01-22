@@ -3,6 +3,7 @@ import './App.css'
 import StablecoinTab from './components/StablecoinTab'
 import SwapTab from './components/SwapTab'
 import GenerateQRTab from './components/GenerateQRTab'
+import StakingTab from './components/StakingTab'
 
 function App() {
   const [activeTab, setActiveTab] = useState('stablecoin')
@@ -62,12 +63,31 @@ function App() {
         >
           Generate QR
         </button>
+
+        <button
+          onClick={() => setActiveTab('staking')}
+          className={`tab-button ${activeTab === 'staking' ? 'active' : ''}`}
+          style={{
+            padding: '10px 30px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            backgroundColor: activeTab === 'staking' ? '#ff9800' : '#f1f1f1',
+            color: activeTab === 'staking' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            fontWeight: activeTab === 'staking' ? 'bold' : 'normal'
+          }}
+        >
+          Staking
+        </button>
+
       </div>
 
       {/* Tab Content */}
       {activeTab === 'stablecoin' && <StablecoinTab />}
       {activeTab === 'swap' && <SwapTab />}
       {activeTab === 'generateQR' && <GenerateQRTab />}
+      {activeTab === 'staking' && <StakingTab />}
     </div>
   )
 }

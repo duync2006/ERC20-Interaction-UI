@@ -267,6 +267,15 @@ h1 {
   text-align: left;
 }
 
+.contract-info-card-1 {
+  background: #2a2a2a;
+  border: 2px solid #646cff;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0rem 0rem 0rem 0rem;
+  text-align: left;
+}
+
 .contract-info-card h3 {
   margin-top: 0;
   margin-bottom: 1rem;
@@ -302,6 +311,14 @@ h1 {
   font-weight: 500;
   word-break: break-all;
   text-align: right;
+  flex: 1;
+}
+
+.info-value-1 {
+  color: #fff;
+  font-weight: 500;
+  word-break: break-all;
+  /* text-align: right; */
   flex: 1;
 }
 

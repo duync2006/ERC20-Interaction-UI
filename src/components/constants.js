@@ -25,3 +25,6 @@ export const BLOCK_EXPLORER_URL = 'http://x23.i247.com:8888'
 
 // Encryption key
 export const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'your-secret-key-change-this'
+
+// Staking contract address
+export const STAKING_CONTRACT_ADDRESS = '0x5248CBc3d08720b01800FC47A973320503D87742'
