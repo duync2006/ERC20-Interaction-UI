@@ -13,6 +13,35 @@ const sendAndGetHash = (method, options) => {
   })
 }
 
+// Helper to wait for transaction confirmation with longer timeout (for 60s block time)
+const waitForReceipt = async (web3, txHash, maxWaitTime = 180000, pollInterval = 5000) => {
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < maxWaitTime) {
+    try {
+      const receipt = await web3.eth.getTransactionReceipt(txHash)
+      if (receipt) {
+        if (receipt.status) {
+          return receipt
+        } else {
+          throw new Error('Transaction failed')
+        }
+      }
+    } catch (err) {
+      // If error is not "receipt not found", rethrow
+      if (err.message !== 'Transaction failed') {
+        console.log('Waiting for confirmation...')
+      } else {
+        throw err
+      }
+    }
+    // Wait before polling again
+    await new Promise(resolve => setTimeout(resolve, pollInterval))
+  }
+
+  throw new Error('Transaction confirmation timeout')
+}
+
 const StakingTab = () => {
   const [account, setAccount] = useState(null)
   const [web3, setWeb3] = useState(null)
@@ -149,11 +178,13 @@ const StakingTab = () => {
     try {
       const stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_CONTRACT_ADDRESS)
       const stake = await stakingContract.methods.getUserStake(selectedToken, account).call()
-
+      const tokenContract = new web3.eth.Contract(ERC20_ABI, selectedToken)
+      const availableAmount = await tokenContract.methods.balanceOf(account).call()
       setUserStake({
         stakedAmount: web3.utils.fromWei(stake.stakedAmount.toString(), 'ether'),
         pendingReward: web3.utils.fromWei(stake.pendingReward.toString(), 'ether'),
-        stakeStartTime: stake.stakeStartTime > 0 ? new Date(Number(stake.stakeStartTime) * 1000).toLocaleString() : 'N/A'
+        stakeStartTime: stake.stakeStartTime > 0 ? new Date(Number(stake.stakeStartTime) * 1000).toLocaleString() : 'N/A',
+        availableAmount: web3.utils.fromWei(availableAmount.toString(), 'ether')  
       })
     } catch (err) {
       console.error('Error loading user stake:', err)
@@ -210,19 +241,27 @@ const StakingTab = () => {
       //   })
       // }
 
-      // Stake tokens
-      await sendAndGetHash(
+      // Approve tokens
+      const approveHash = await sendAndGetHash(
         tokenContract.methods.approve(STAKING_CONTRACT_ADDRESS, amountInWei),
         { from: account, gas: 300000 }
       )
+      // console.log('Approve tx hash:', approveHash)
+      // Wait for approve to be confirmed
+      // await waitForReceipt(web3, approveHash)
+
+      // Stake tokens
       const stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_CONTRACT_ADDRESS)
-      const tx = await sendAndGetHash(
+      const stakeHash = await sendAndGetHash(
         stakingContract.methods.stake(selectedToken, amountInWei),
-        { from: account, gas: 300000}
+        { from: account, gas: 300000 }
       )
-      console.log('Stake tx hash:', tx)
-      setTxHash(tx)
+      console.log('Stake tx hash:', stakeHash)
+      setTxHash(stakeHash)
       setAmount('')
+
+      // Wait for stake tx to be confirmed before reloading data
+      await waitForReceipt(web3, stakeHash)
       await loadUserStake()
       await loadTokenInfo()
       await loadAllUserStakes()
@@ -257,6 +296,9 @@ const StakingTab = () => {
 
       setTxHash(tx)
       setAmount('')
+
+      // Wait for tx to be confirmed before reloading data
+      await waitForReceipt(web3, tx)
       await loadUserStake()
       await loadTokenInfo()
       await loadAllUserStakes()
@@ -289,6 +331,9 @@ const StakingTab = () => {
       )
 
       setTxHash(tx)
+
+      // Wait for tx to be confirmed before reloading data
+      await waitForReceipt(web3, tx)
       await loadUserStake()
       await loadAllUserStakes()
 
@@ -309,11 +354,15 @@ const StakingTab = () => {
     try {
       const stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_CONTRACT_ADDRESS)
 
-      const tx = await stakingContract.methods.claimAllRewards().send({
-        from: account
-      })
+      const tx = await sendAndGetHash(
+        stakingContract.methods.claimAllRewards(),
+        { from: account, gas: 500000 }
+      )
 
-      setTxHash(tx.transactionHash)
+      setTxHash(tx)
+
+      // Wait for tx to be confirmed before reloading data
+      await waitForReceipt(web3, tx)
       await loadAllUserStakes()
       if (selectedToken) {
         await loadUserStake()
@@ -512,6 +561,10 @@ const StakingTab = () => {
                 <div className="info-item">
                   <span className="info-label">Staked Amount:</span>
                   <span className="info-value">{parseFloat(userStake.stakedAmount).toFixed(4)} {getSelectedTokenSymbol()}</span>
+                </div>
+                <div className="info-item">
+                  <span className="info-label">Available Amount:</span>
+                  <span className="info-value">{parseFloat(userStake.availableAmount).toFixed(4)} {getSelectedTokenSymbol()}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Pending Rewards:</span>
