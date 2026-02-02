@@ -6,9 +6,13 @@ import {
   TOKEN_VNDX,
   TOKEN_SGDX,
   TOKEN_YENX,
+  TOKEN_USDT,
   SWAP_SGDX_VNDX_ADDRESS,
   SWAP_YENX_VNDX_ADDRESS,
   SWAP_SGDX_YENX_ADDRESS,
+  SWAP_USDT_VNDX_ADDRESS,
+  SWAP_USDT_SGDX_ADDRESS,
+  SWAP_USDT_YENX_ADDRESS,
   RPC_URL,
   RPC_URL_HTTPS,
   CHAIN_ID_HEX,
@@ -120,8 +124,16 @@ const SwapTab = () => {
       return SWAP_YENX_VNDX_ADDRESS
     } else if ((fromToken === TOKEN_SGDX && toToken === TOKEN_YENX) ||
                (fromToken === TOKEN_YENX && toToken === TOKEN_SGDX)) {
-      console.log('Using SGDX-YENX swap contract', SWAP_SGDX_YENX_ADDRESS)
       return SWAP_SGDX_YENX_ADDRESS
+    } else if ((fromToken === TOKEN_USDT && toToken === TOKEN_VNDX) ||
+               (fromToken === TOKEN_VNDX && toToken === TOKEN_USDT)) {
+      return SWAP_USDT_VNDX_ADDRESS
+    } else if ((fromToken === TOKEN_USDT && toToken === TOKEN_SGDX) ||
+               (fromToken === TOKEN_SGDX && toToken === TOKEN_USDT)) {
+      return SWAP_USDT_SGDX_ADDRESS
+    } else if ((fromToken === TOKEN_USDT && toToken === TOKEN_YENX) ||
+               (fromToken === TOKEN_YENX && toToken === TOKEN_USDT)) {
+      return SWAP_USDT_YENX_ADDRESS
     }
     return null
   }
@@ -180,7 +192,16 @@ const SwapTab = () => {
 
       if (fromToken === TOKEN_VNDX && (toToken === TOKEN_SGDX || toToken === TOKEN_YENX)) {
         const tokenVNDXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_VNDX)
-        // Wait for approve tx hash, then immediately send swap
+        await sendAndGetHash(
+          tokenVNDXContract.methods.approve(swapContractAddress, amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+        swapTxHashResult = await sendAndGetHash(
+          swapContract.methods.swapBforA(amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+      } else if (fromToken === TOKEN_VNDX && toToken === TOKEN_USDT) {
+        const tokenVNDXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_VNDX)
         await sendAndGetHash(
           tokenVNDXContract.methods.approve(swapContractAddress, amountInWei),
           { from: account.address, gas: 300000 }
@@ -199,10 +220,40 @@ const SwapTab = () => {
           swapContract.methods.swapAforB(amountInWei),
           { from: account.address, gas: 300000 }
         )
+      } else if (fromToken === TOKEN_SGDX && toToken === TOKEN_USDT) {
+        const tokenSGDXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_SGDX)
+        await sendAndGetHash(
+          tokenSGDXContract.methods.approve(swapContractAddress, amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+        swapTxHashResult = await sendAndGetHash(
+          swapContract.methods.swapBforA(amountInWei),
+          { from: account.address, gas: 300000 }
+        )
       } else if (fromToken === TOKEN_YENX && (toToken === TOKEN_VNDX || toToken === TOKEN_SGDX)) {
         const tokenYENXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_YENX)
         await sendAndGetHash(
           tokenYENXContract.methods.approve(swapContractAddress, amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+        swapTxHashResult = await sendAndGetHash(
+          swapContract.methods.swapAforB(amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+      } else if (fromToken === TOKEN_YENX && toToken === TOKEN_USDT) {
+        const tokenYENXContract = new web3.eth.Contract(ERC20_ABI, TOKEN_YENX)
+        await sendAndGetHash(
+          tokenYENXContract.methods.approve(swapContractAddress, amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+        swapTxHashResult = await sendAndGetHash(
+          swapContract.methods.swapBforA(amountInWei),
+          { from: account.address, gas: 300000 }
+        )
+      } else if (fromToken === TOKEN_USDT) {
+        const tokenUSDTContract = new web3.eth.Contract(ERC20_ABI, TOKEN_USDT)
+        await sendAndGetHash(
+          tokenUSDTContract.methods.approve(swapContractAddress, amountInWei),
           { from: account.address, gas: 300000 }
         )
         swapTxHashResult = await sendAndGetHash(
@@ -217,8 +268,8 @@ const SwapTab = () => {
       const afterFromBalance = beforeFromBalance - BigInt(amountInWei)
       const afterToBalance = beforeToBalance + BigInt(web3.utils.toWei(estimatedOutput, 'ether'))
 
-      const fromTokenName = fromToken === TOKEN_VNDX ? 'VNDX' : fromToken === TOKEN_SGDX ? 'SGDX' : 'YENX'
-      const toTokenName = toToken === TOKEN_VNDX ? 'VNDX' : toToken === TOKEN_SGDX ? 'SGDX' : 'YENX'
+      const fromTokenName = getTokenName(fromToken)
+      const toTokenName = getTokenName(toToken)
 
       setSwapBalances({
         fromToken: fromTokenName,
@@ -264,8 +315,17 @@ const SwapTab = () => {
                  (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_VNDX)) {
         swapContractAddress = SWAP_YENX_VNDX_ADDRESS
       } else if ((fromTokenAddress === TOKEN_SGDX && toTokenAddress === TOKEN_YENX) ||
-                  (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_SGDX)) {
+                 (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_SGDX)) {
         swapContractAddress = SWAP_SGDX_YENX_ADDRESS
+      } else if ((fromTokenAddress === TOKEN_USDT && toTokenAddress === TOKEN_VNDX) ||
+                 (fromTokenAddress === TOKEN_VNDX && toTokenAddress === TOKEN_USDT)) {
+        swapContractAddress = SWAP_USDT_VNDX_ADDRESS
+      } else if ((fromTokenAddress === TOKEN_USDT && toTokenAddress === TOKEN_SGDX) ||
+                 (fromTokenAddress === TOKEN_SGDX && toTokenAddress === TOKEN_USDT)) {
+        swapContractAddress = SWAP_USDT_SGDX_ADDRESS
+      } else if ((fromTokenAddress === TOKEN_USDT && toTokenAddress === TOKEN_YENX) ||
+                 (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_USDT)) {
+        swapContractAddress = SWAP_USDT_YENX_ADDRESS
       } else {
         setEstimatedOutput('N/A')
         return
@@ -284,8 +344,11 @@ const SwapTab = () => {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
       } else if (fromTokenAddress === TOKEN_SGDX && toTokenAddress === TOKEN_YENX) {
         outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
-        console.log('Estimating SGDX to YENX:', outputWei)
       } else if (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_SGDX) {
+        outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
+      } else if (fromTokenAddress === TOKEN_USDT) {
+        outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
+      } else if (toTokenAddress === TOKEN_USDT) {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
       } else {
         setEstimatedOutput('N/A')
@@ -304,6 +367,7 @@ const SwapTab = () => {
     if (tokenAddress === TOKEN_VNDX) return 'VNDX'
     if (tokenAddress === TOKEN_SGDX) return 'SGDX'
     if (tokenAddress === TOKEN_YENX) return 'YENX'
+    if (tokenAddress === TOKEN_USDT) return 'USDT'
     return 'Unknown'
   }
 
@@ -352,6 +416,7 @@ const SwapTab = () => {
               <option value={TOKEN_VNDX}>VNDX</option>
               <option value={TOKEN_SGDX}>SGDX</option>
               <option value={TOKEN_YENX}>YENX</option>
+              <option value={TOKEN_USDT}>USDT</option>
             </select>
           </div>
         </div>
@@ -419,6 +484,7 @@ const SwapTab = () => {
               <option value={TOKEN_VNDX}>VNDX</option>
               <option value={TOKEN_SGDX}>SGDX</option>
               <option value={TOKEN_YENX}>YENX</option>
+              <option value={TOKEN_USDT}>USDT</option>
             </select>
           </div>
         </div>

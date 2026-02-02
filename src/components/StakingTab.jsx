@@ -246,9 +246,6 @@ const StakingTab = () => {
         tokenContract.methods.approve(STAKING_CONTRACT_ADDRESS, amountInWei),
         { from: account, gas: 300000 }
       )
-      // console.log('Approve tx hash:', approveHash)
-      // Wait for approve to be confirmed
-      // await waitForReceipt(web3, approveHash)
 
       // Stake tokens
       const stakingContract = new web3.eth.Contract(STAKING_ABI, STAKING_CONTRACT_ADDRESS)
@@ -543,11 +540,11 @@ const StakingTab = () => {
                 </div>
                 <div className="info-item">
                   <span className="info-label">Total Staked:</span>
-                  <span className="info-value">{parseFloat(tokenInfo.totalStaked).toFixed(4)} {getSelectedTokenSymbol()}</span>
+                  <span className="info-value">{parseFloat(tokenInfo.totalStaked).toFixed(2)} {getSelectedTokenSymbol()}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Reward Pool:</span>
-                  <span className="info-value">{parseFloat(tokenInfo.rewardPool).toFixed(4)} {getSelectedTokenSymbol()}</span>
+                  <span className="info-value">{parseFloat(tokenInfo.rewardPool).toFixed(2)} {getSelectedTokenSymbol()}</span>
                 </div>
               </div>
             </div>
@@ -560,15 +557,15 @@ const StakingTab = () => {
               <div className="info-grid">
                 <div className="info-item">
                   <span className="info-label">Staked Amount:</span>
-                  <span className="info-value">{parseFloat(userStake.stakedAmount).toFixed(4)} {getSelectedTokenSymbol()}</span>
+                  <span className="info-value">{parseFloat(userStake.stakedAmount).toFixed(2)} {getSelectedTokenSymbol()}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Available Amount:</span>
-                  <span className="info-value">{parseFloat(userStake.availableAmount).toFixed(4)} {getSelectedTokenSymbol()}</span>
+                  <span className="info-value">{parseFloat(userStake.availableAmount).toFixed(2)} {getSelectedTokenSymbol()}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Pending Rewards:</span>
-                  <span className="info-value" style={{ color: '#4CAF50' }}>{parseFloat(userStake.pendingReward).toFixed(4)} {getSelectedTokenSymbol()}</span>
+                  <span className="info-value" style={{ color: '#4CAF50' }}>{parseFloat(userStake.pendingReward).toFixed(2)} {getSelectedTokenSymbol()}</span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Staking Since:</span>

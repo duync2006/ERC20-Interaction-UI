@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import Web3 from 'web3'
 import { ERC20_ABI } from '../../erc20_abi'
-import { RPC_URL, BLOCK_EXPLORER_URL } from './constants'
+import { RPC_URL, BLOCK_EXPLORER_URL, TOKEN_VNDX, TOKEN_SGDX, TOKEN_YENX, TOKEN_USDT } from './constants'
 
 const StablecoinTab = () => {
-  const [contractAddress, setContractAddress] = useState('0x329aaF4e8d9883c6F8610D48172DE9c6C0917ecD')
+  const [contractAddress, setContractAddress] = useState('0x3FE02b7e3bCD23C17A2dd1d079652dA2f993238A')
   const [amount, setAmount] = useState('')
   const [recipientAddress, setRecipientAddress] = useState('')
   const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false)
@@ -17,6 +17,7 @@ const StablecoinTab = () => {
   const [contractInfo, setContractInfo] = useState(null)
   const [checkingContract, setCheckingContract] = useState(false)
   const [contractError, setContractError] = useState('')
+  const [selectedToken, setSelectedToken] = useState(TOKEN_VNDX)
 
   const openPrivateKeyModal = (action) => {
     setCurrentAction(action)
@@ -46,12 +47,18 @@ const StablecoinTab = () => {
       const web3 = new Web3(RPC_URL)
       const contract = new web3.eth.Contract(ERC20_ABI, contractAddress)
 
-      const [name, symbol, decimals, totalSupply, owner] = await Promise.all([
+      const [name, symbol, decimals, totalSupply, owner, currencyName, currencyCode, currencyDecimals, currencySymbol, issuerName, issuerID] = await Promise.all([
         contract.methods.name().call().catch(() => 'N/A'),
         contract.methods.symbol().call().catch(() => 'N/A'),
         contract.methods.decimals().call().catch(() => '18'),
         contract.methods.totalSupply().call().catch(() => '0'),
-        contract.methods.owner().call().catch(() => 'N/A')
+        contract.methods.owner().call().catch(() => 'N/A'),
+        contract.methods.currencyName().call().catch(() => 'N/A'),
+        contract.methods.currencyCode().call().catch(() => 'N/A'),
+        contract.methods.currencyDecimals().call().catch(() => '18'),
+        contract.methods.currencySymbol().call().catch(() => 'N/A'),
+        contract.methods.issuerName().call().catch(() => 'N/A'),
+        contract.methods.issuerID().call().catch(() => 'N/A')
       ])
 
       let ownerBalance = '0'
@@ -72,7 +79,13 @@ const StablecoinTab = () => {
         decimals: decimals.toString(),
         totalSupply: totalSupplyInTokens,
         owner,
-        ownerBalance: ownerBalanceInTokens
+        ownerBalance: ownerBalanceInTokens,
+        currencyName,
+        currencyCode,
+        currencyDecimals: currencyDecimals.toString(),
+        currencySymbol,
+        issuerName,
+        issuerID
       })
     } catch (err) {
       console.error('Error fetching contract info:', err)
@@ -153,6 +166,11 @@ const StablecoinTab = () => {
     }
   }
 
+  const handleSelect = (token) => {
+    setSelectedToken(token)
+    setContractAddress(token)
+  }
+
   return (
     <>
       <div className="form-container">
@@ -189,6 +207,30 @@ const StablecoinTab = () => {
                 <span className="info-label">Owner Balance:</span>
                 <span className="info-value contract-address">{contractInfo.ownerBalance} {contractInfo.symbol}</span>
               </div>
+              <div className="info-item">
+                <span className="info-label">Currency Name:</span>
+                <span className="info-value">{contractInfo.currencyName}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Currency Code:</span>
+                <span className="info-value">{contractInfo.currencyCode}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Currency Decimals:</span>
+                <span className="info-value">{contractInfo.currencyDecimals}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Currency Symbol:</span>
+                <span className="info-value">{contractInfo.currencySymbol}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Issuer Name:</span>
+                <span className="info-value">{contractInfo. issuerName}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Issuer ID:</span>
+                <span className="info-value">{contractInfo.issuerID}</span>
+              </div>
             </div>
           </div>
         )}
@@ -222,6 +264,36 @@ const StablecoinTab = () => {
             placeholder="100"
             className="input-field"
           />
+        </div>
+
+        <div className="form-group">
+          <label>Select Token:</label>
+          <div className="token-select-buttons">
+            <button
+              onClick={() => handleSelect(TOKEN_VNDX)}
+              className={`token-select-button ${selectedToken === TOKEN_VNDX ? 'selected' : ''}`}
+            >
+              VNDX
+            </button>
+            <button
+              onClick={() => handleSelect(TOKEN_SGDX)}
+              className={`token-select-button ${selectedToken === TOKEN_SGDX ? 'selected' : ''}`}
+            >
+              SGDX
+            </button>
+            <button
+              onClick={() => handleSelect(TOKEN_YENX)}
+              className={`token-select-button ${selectedToken === TOKEN_YENX ? 'selected' : ''}`}
+            >
+              YENX
+            </button>
+            <button
+              onClick={() => handleSelect(TOKEN_USDT)}
+              className={`token-select-button ${selectedToken === TOKEN_USDT ? 'selected' : ''}`}
+            >
+              USDT
+            </button>
+          </div>
         </div>
 
         <div className="button-group">
