@@ -5,6 +5,7 @@ import SwapTab from './components/SwapTab'
 import GenerateQRTab from './components/GenerateQRTab'
 import StakingTab from './components/StakingTab'
 import OrderBookTab from './components/OrderBookTab'
+import PriceOracleTab from './components/PriceOracleTab'
 
 function App() {
   const [activeTab, setActiveTab] = useState('stablecoin')
@@ -99,6 +100,23 @@ function App() {
           Order Book
         </button>
 
+        <button
+          onClick={() => setActiveTab('oracle')}
+          className={`tab-button ${activeTab === 'oracle' ? 'active' : ''}`}
+          style={{
+            padding: '10px 30px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            backgroundColor: activeTab === 'oracle' ? '#00bcd4' : '#f1f1f1',
+            color: activeTab === 'oracle' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            fontWeight: activeTab === 'oracle' ? 'bold' : 'normal'
+          }}
+        >
+          Price Oracle
+        </button>
+
       </div>
 
       {/* Tab Content */}
@@ -107,6 +125,7 @@ function App() {
       {activeTab === 'generateQR' && <GenerateQRTab />}
       {activeTab === 'staking' && <StakingTab />}
       {activeTab === 'orderbook' && <OrderBookTab />}
+      {activeTab === 'oracle' && <PriceOracleTab />}
     </div>
   )
 }
