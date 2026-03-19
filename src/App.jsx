@@ -6,6 +6,7 @@ import GenerateQRTab from './components/GenerateQRTab'
 import StakingTab from './components/StakingTab'
 import OrderBookTab from './components/OrderBookTab'
 import PriceOracleTab from './components/PriceOracleTab'
+import RewardingTab from './components/RewardingTab'
 
 function App() {
   const [activeTab, setActiveTab] = useState('stablecoin')
@@ -117,6 +118,23 @@ function App() {
           Price Oracle
         </button>
 
+        <button
+          onClick={() => setActiveTab('rewarding')}
+          className={`tab-button ${activeTab === 'rewarding' ? 'active' : ''}`}
+          style={{
+            padding: '10px 30px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            backgroundColor: activeTab === 'rewarding' ? '#e91e63' : '#f1f1f1',
+            color: activeTab === 'rewarding' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            fontWeight: activeTab === 'rewarding' ? 'bold' : 'normal'
+          }}
+        >
+          Rewarding
+        </button>
+
       </div>
 
       {/* Tab Content */}
@@ -126,6 +144,7 @@ function App() {
       {activeTab === 'staking' && <StakingTab />}
       {activeTab === 'orderbook' && <OrderBookTab />}
       {activeTab === 'oracle' && <PriceOracleTab />}
+      {activeTab === 'rewarding' && <RewardingTab />}
     </div>
   )
 }

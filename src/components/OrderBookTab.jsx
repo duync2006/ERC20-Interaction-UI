@@ -11,7 +11,8 @@ import {
   RPC_URL_WS,
   CHAIN_ID_HEX,
   BLOCK_EXPLORER_URL,
-  P2P_EXCHANGE_ADDRESS
+  P2P_EXCHANGE_ADDRESS,
+  TOKEN_USDT
 } from './constants'
 
 // Helper to send transaction and get hash immediately without waiting for receipt
@@ -51,7 +52,8 @@ const waitForReceipt = async (web3, txHash, maxWaitTime = 180000, pollInterval =
 const TOKENS = [
   { address: TOKEN_VNDX, symbol: 'VNDX', name: 'VNDX Token' },
   { address: TOKEN_SGDX, symbol: 'SGDX', name: 'SGDX Token' },
-  { address: TOKEN_YENX, symbol: 'YENX', name: 'YENX Token' }
+  { address: TOKEN_YENX, symbol: 'YENX', name: 'YENX Token' },
+  { address: TOKEN_USDT, symbol: 'USDT', name: 'Tether USD' }
 ]
 
 const getTokenSymbol = (address) => {
