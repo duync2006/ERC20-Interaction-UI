@@ -5,10 +5,10 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), nodePolyfills()],
-  base: './',
+  base: './stablecoin',
   server: {
     port: 5555,
-    allowedHosts: ['0.0.0.0','.i247.com'],
+    allowedHosts: ['0.0.0.0', '.i247.com', 'nexxa.asia'],
     host: '0.0.0.0',
     proxy: {
       '/rpc': {
