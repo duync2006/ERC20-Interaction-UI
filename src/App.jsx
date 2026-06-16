@@ -7,6 +7,7 @@ import StakingTab from './components/StakingTab'
 import OrderBookTab from './components/OrderBookTab'
 import PriceOracleTab from './components/PriceOracleTab'
 import RewardingTab from './components/RewardingTab'
+import BaseCoinTab from './components/BaseCoinTab'
 
 function App() {
   const [activeTab, setActiveTab] = useState('stablecoin')
@@ -135,6 +136,23 @@ function App() {
           Rewarding
         </button>
 
+        <button
+          onClick={() => setActiveTab('baseCoin')}
+          className={`tab-button ${activeTab === 'baseCoin' ? 'active' : ''}`}
+          style={{
+            padding: '10px 30px',
+            fontSize: '16px',
+            cursor: 'pointer',
+            backgroundColor: activeTab === 'baseCoin' ? '#0052ff' : '#f1f1f1',
+            color: activeTab === 'baseCoin' ? 'white' : 'black',
+            border: 'none',
+            borderRadius: '5px',
+            fontWeight: activeTab === 'baseCoin' ? 'bold' : 'normal'
+          }}
+        >
+          Base USDC
+        </button>
+
       </div>
 
       {/* Tab Content */}
@@ -145,6 +163,7 @@ function App() {
       {activeTab === 'orderbook' && <OrderBookTab />}
       {activeTab === 'oracle' && <PriceOracleTab />}
       {activeTab === 'rewarding' && <RewardingTab />}
+      {activeTab === 'baseCoin' && <BaseCoinTab />}
     </div>
   )
 }

@@ -336,20 +336,28 @@ const SwapTab = () => {
       let outputWei
       if (fromTokenAddress === TOKEN_VNDX && toTokenAddress === TOKEN_SGDX) {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
+        console.log('Estimated output (VNDX → SGDX):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (fromTokenAddress === TOKEN_SGDX && toTokenAddress === TOKEN_VNDX) {
         outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
+        console.log('Estimated output (SGDX → VNDX):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_VNDX) {
         outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
+        console.log('Estimated output (YENX → VNDX):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (fromTokenAddress === TOKEN_VNDX && toTokenAddress === TOKEN_YENX) {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
+        console.log('Estimated output (VNDX → YENX):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (fromTokenAddress === TOKEN_SGDX && toTokenAddress === TOKEN_YENX) {
         outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
+        console.log('Estimated output (SGDX → YENX):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (fromTokenAddress === TOKEN_YENX && toTokenAddress === TOKEN_SGDX) {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
+        console.log('Estimated output (YENX → SGDX):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (fromTokenAddress === TOKEN_USDT) {
         outputWei = await swapContract.methods.getAmountOutAforB(amountInWei).call()
+        console.log('Estimated output (USDT → ...):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else if (toTokenAddress === TOKEN_USDT) {
         outputWei = await swapContract.methods.getAmountOutBforA(amountInWei).call()
+        console.log('Estimated output (... → USDT):', web3.utils.fromWei(outputWei.toString(), 'ether'))
       } else {
         setEstimatedOutput('N/A')
         return

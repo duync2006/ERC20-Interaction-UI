@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  // base: '/stablecoin/',
+  plugins: [react(), nodePolyfills()],
+  base: './',
   server: {
     port: 5555,
     allowedHosts: ['0.0.0.0','.i247.com'],
