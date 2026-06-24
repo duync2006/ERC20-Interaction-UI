@@ -75,6 +75,7 @@ const CHAINS = [
     rpc: 'https://polygon.drpc.org',
     usdc: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
     explorer: 'https://polygonscan.com',
+    minPriorityFeeGwei: 25,
   },
   {
     name: 'Polygon Amoy', icon: '🟣', color: '#8247e5', nativeSymbol: 'POL',
@@ -83,6 +84,7 @@ const CHAINS = [
     rpc: 'https://rpc-amoy.polygon.technology',
     usdc: '0x8B0180f2101c8260d49339abfEe87927412494B4',
     explorer: 'https://amoy.polygonscan.com',
+    minPriorityFeeGwei: 25,
   },
   {
     name: 'Solana Devnet', icon: '🟢', color: '#00ff7f', nativeSymbol: 'SOL',
@@ -216,6 +218,9 @@ const BaseCoinTab = () => {
       }
 
       const addr = provider.selectedAddress || accounts[0]
+      // console.log('Connected account:', addr)
+      // console.log('Provider selectedAddress:', provider.selectedAddress)
+      // console.log('Provider accounts[0]:', accounts[0])
       setAccount(addr)
       setIsConnected(true)
       setWalletType(walletKey)
@@ -305,11 +310,17 @@ const BaseCoinTab = () => {
         usdc.methods.transfer(toAddress, rawAmount.toString()).estimateGas({ from: acct }),
         web3.eth.getGasPrice(),
       ])
-      const feeWei = BigInt(gasUnits) * BigInt(gasPriceWei)
+      const minFeeWei = sendNetwork.minPriorityFeeGwei
+        ? BigInt(sendNetwork.minPriorityFeeGwei) * 1_000_000_000n
+        : 0n
+      const gasPriceBig = BigInt(gasPriceWei)
+      const effectiveGasPrice = gasPriceBig > minFeeWei ? gasPriceBig : minFeeWei
+      // Divide in Gwei first to stay within Number's safe integer range (< 2^53)
+      const feeGwei = Number(BigInt(gasUnits) * effectiveGasPrice / 1_000_000_000n)
       setGasInfo({
         gasUnits: Number(gasUnits),
-        gasPriceGwei: (Number(gasPriceWei) / 1e9).toFixed(4),
-        feeEth: (Number(feeWei) / 1e18).toFixed(8),
+        gasPriceGwei: (Number(effectiveGasPrice) / 1e9).toFixed(4),
+        feeEth: (feeGwei / 1e9).toFixed(8),
         symbol: sendNetwork.nativeSymbol,
       })
     } catch {
@@ -326,9 +337,21 @@ const BaseCoinTab = () => {
     const rawAmount = BigInt(Math.round(parseFloat(amount) * 1e6))
     const data = usdc.methods.transfer(recipient, rawAmount.toString()).encodeABI()
     const gasLimit = gasInfo ? Math.ceil(gasInfo.gasUnits * 1.2) : 100000
+    const txParams = { from: account, to: sendNetwork.usdc, data, gas: Web3.utils.toHex(gasLimit) }
+
+    if (sendNetwork.minPriorityFeeGwei) {
+      const minWei = BigInt(sendNetwork.minPriorityFeeGwei) * 1_000_000_000n
+      const networkGasPrice = BigInt(await web3.eth.getGasPrice())
+      const tip = networkGasPrice > minWei ? networkGasPrice : minWei
+      const tipWithBuffer = tip * 12n / 10n          // +20% buffer
+      const maxFee = tipWithBuffer * 2n              // headroom for base fee fluctuation
+      txParams.maxPriorityFeePerGas = '0x' + tipWithBuffer.toString(16)
+      txParams.maxFeePerGas = '0x' + maxFee.toString(16)
+    }
+
     return await connectedEvmProvider.request({
       method: 'eth_sendTransaction',
-      params: [{ from: account, to: sendNetwork.usdc, data, gas: Web3.utils.toHex(gasLimit) }],
+      params: [txParams],
     })
   }
 
